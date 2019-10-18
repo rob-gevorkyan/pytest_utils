@@ -6,7 +6,9 @@ import json
 def pytest_runtest_makereport(item):
     x = yield
     x._result.max_score = getattr(item._obj, 'max_score', 0)
+    x._result.score = getattr(item._obj, 'score', 0)
     x._result.visibility = getattr(item._obj, 'visibility', 'visible')
+    x._result.tags = getattr(item._obj, 'tags', None)
 
 def pytest_terminal_summary(terminalreporter, exitstatus):
     json_results = {'tests': []}
@@ -19,9 +21,8 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
 
     for s in all_tests:
         output = ''
-        score = s.max_score
+        score = s.score
         if (s.outcome == 'failed'):
-            score = 0
             output = str(s.longrepr.chain[0][0].reprentries[0])
 
         json_results["tests"].append(
@@ -30,6 +31,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus):
                 'max_score': s.max_score,
                 'name': s.location[2],
                 'output': output,
+                'tags': s.tags,
                 'visibility': s.visibility
             }
         )
